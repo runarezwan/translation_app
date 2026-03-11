@@ -114,6 +114,7 @@ class LuminaTranslator {
     }
 
     toggleListening() {
+        console.log('Toggle Clicked. Current state:', this.isListening);
         if (this.isListening) {
             this.stopListening();
         } else {
@@ -122,36 +123,47 @@ class LuminaTranslator {
     }
 
     startListening() {
-        if (!this.recognition) return;
+        if (!this.recognition) {
+            console.error('Recognition object missing');
+            this.listeningText.textContent = '❌ Error: Browser not supported';
+            return;
+        }
         
-        // Set recognition language based on current mode
         const fromLang = this.currentMode.split('-')[0];
         this.recognition.lang = this.languages[fromLang].code;
+        console.log('Attempting to start recognition for:', this.recognition.lang);
         
         try {
             this.recognition.start();
             this.isListening = true;
+            this.listeningText.textContent = 'Connecting to microphone...';
         } catch (e) {
-            console.error('Recognition already started');
+            console.error('Recognition start error:', e);
+            this.listeningText.textContent = 'Error: ' + e.message;
         }
     }
 
     stopListening() {
         if (!this.recognition) return;
+        console.log('Stopping recognition');
         this.recognition.stop();
         this.isListening = false;
         this.setListeningUI(false);
     }
 
     setListeningUI(active) {
+        console.log('Updating UI for active state:', active);
         if (active) {
             this.micBtn.classList.add('active');
             this.statusIndicator.classList.add('listening');
             this.listeningText.textContent = 'Listening...';
+            this.listeningText.style.color = ''; // Reset color
         } else {
             this.micBtn.classList.remove('active');
             this.statusIndicator.classList.remove('listening');
-            this.listeningText.textContent = 'Click to start listening';
+            if (!this.listeningText.textContent.startsWith('Error')) {
+                this.listeningText.textContent = 'Click to start listening';
+            }
         }
     }
 
