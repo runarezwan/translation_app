@@ -272,6 +272,35 @@ header {
     font-size: 0.9rem;
 }
 
+.troubleshoot-card {
+    margin-top: 2rem;
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px dashed var(--primary);
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: var(--text-main);
+}
+
+.troubleshoot-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.troubleshoot-card ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.troubleshoot-card li strong {
+    color: var(--primary);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 8px;
