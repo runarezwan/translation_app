@@ -23,8 +23,16 @@ class LuminaTranslator {
         this.langFromLabel = document.getElementById('lang-from-label');
         this.langToLabel = document.getElementById('lang-to-label');
 
+        this.checkProtocol();
         this.initSpeechRecognition();
         this.attachEvents();
+    }
+
+    checkProtocol() {
+        if (window.location.protocol === 'file:') {
+            this.listeningText.textContent = '⚠️ Mic blocked on "file://". Use http://localhost:3000';
+            this.listeningText.style.color = '#f59e0b'; // Amber warning color
+        }
     }
 
     initSpeechRecognition() {
@@ -41,12 +49,17 @@ class LuminaTranslator {
         
         this.recognition.onstart = () => {
             this.setListeningUI(true);
+            console.log('Recognition started');
         };
 
         this.recognition.onend = () => {
             if (this.isListening) {
-                // Keep listening if we didn't explicitly stop
-                this.recognition.start();
+                // Keep listening if we didn't explicitly stop and no error occurred
+                try {
+                    this.recognition.start();
+                } catch (e) {
+                    console.error('Restart failed:', e);
+                }
             } else {
                 this.setListeningUI(false);
             }
@@ -73,10 +86,25 @@ class LuminaTranslator {
 
         this.recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
+            this.isListening = false;
+            this.setListeningUI(false);
+            
+            let message = 'Error: ';
             if (event.error === 'not-allowed') {
-                alert('Microphone access denied. Please enable it in browser settings.');
-                this.stopListening();
+                message += 'Microphone access denied. Please click the lock icon in the URL bar and allow microphone.';
+            } else if (event.error === 'network') {
+                message += 'Network error. Please check your internet.';
+            } else if (event.error === 'no-speech') {
+                message += 'No speech detected. Please try again.';
+                // Auto-restart for 'no-speech' if we want it to be continuous
+                this.isListening = true;
+                setTimeout(() => this.startListening(), 100);
+            } else {
+                message += event.error;
             }
+            
+            this.listeningText.textContent = message;
+            this.listeningText.style.color = '#ef4444'; // Red color for errors
         };
     }
 
