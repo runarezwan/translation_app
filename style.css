@@ -116,6 +116,21 @@ header {
     font-weight: 700;
     letter-spacing: 0.1em;
     backdrop-filter: blur(4px);
+    z-index: 2;
+}
+
+.video-error-msg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    color: #f8fafc;
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 2rem;
+    z-index: 1;
 }
 
 .translator-card {

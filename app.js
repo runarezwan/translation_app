@@ -137,31 +137,51 @@ class LuminaTranslator {
             return;
         }
 
-        // 1. Hardware/Permission Check First (Audio + Video)
+        // 1. Hardware/Permission Check (Resilient approach)
         try {
             this.listeningText.textContent = 'Requesting Camera & Mic access...';
-            this.stream = await navigator.mediaDevices.getUserMedia({ 
-                audio: true, 
-                video: { width: 1280, height: 720 } 
-            });
             
-            console.log('Hardware access granted');
+            try {
+                // Attempt to get both
+                this.stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: true, 
+                    video: { width: 1280, height: 720, facingMode: "user" } 
+                });
+                console.log('Camera and Microphone access granted');
+            } catch (videoErr) {
+                console.warn('Camera failed, attempting audio only:', videoErr);
+                // Fallback: Try getting ONLY audio if video failed
+                this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                this.listeningText.textContent = '⚠️ Camera unavailable. Running in Audio-Only mode.';
+                this.listeningText.style.color = '#f59e0b'; // Warning color
+                
+                // Show a visible error in the video container
+                if (this.videoFeed) {
+                    const parent = this.videoFeed.parentElement;
+                    const errorMsg = document.createElement('div');
+                    errorMsg.className = 'video-error-msg';
+                    errorMsg.textContent = 'Camera blocked or used by another app';
+                    parent.appendChild(errorMsg);
+                }
+            }
             
-            // Attach stream to video element
-            if (this.videoFeed) {
+            // Attach stream to video element if video tracks exist
+            if (this.videoFeed && this.stream.getVideoTracks().length > 0) {
                 this.videoFeed.srcObject = this.stream;
             }
             
         } catch (err) {
-            console.error('Hardware error:', err);
+            console.error('Final hardware error:', err);
             this.isListening = false;
             this.setListeningUI(false);
+            
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                this.listeningText.textContent = '❌ Permission Denied! Click the LOCK icon 🔒 in the URL bar and reset camera/mic access.';
+                this.listeningText.textContent = '❌ Access Denied! Click the LOCK icon 🔒 in the URL bar to allow Camera/Mic.';
             } else if (err.name === 'NotFoundError') {
-                this.listeningText.textContent = '❌ No Camera or Microphone found!';
+                this.listeningText.textContent = '❌ No Camera/Microphone found on this device.';
             } else {
-                this.listeningText.textContent = '❌ Error: ' + err.message;
+                this.listeningText.textContent = '❌ Hardware Error: ' + err.message;
             }
             this.listeningText.style.color = '#ef4444';
             return;
@@ -202,7 +222,12 @@ class LuminaTranslator {
         // Stop Camera Stream
         if (this.stream) {
             this.stream.getTracks().forEach(track => track.stop());
-            if (this.videoFeed) this.videoFeed.srcObject = null;
+            if (this.videoFeed) {
+                this.videoFeed.srcObject = null;
+                // Clean up error messages
+                const errorMsg = this.videoFeed.parentElement.querySelector('.video-error-msg');
+                if (errorMsg) errorMsg.remove();
+            }
         }
         
         this.isListening = false;
