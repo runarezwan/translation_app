@@ -85,6 +85,39 @@ header {
 }
 
 /* Translator Card */
+/* Camera Container */
+.camera-container {
+    width: 100%;
+    height: 300px;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border-color);
+    box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+#video-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1); /* Mirror effect */
+}
+
+.video-overlay {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(16, 185, 129, 0.8);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    backdrop-filter: blur(4px);
+}
+
 .translator-card {
     background: var(--card-bg);
     backdrop-filter: var(--glass-blur);

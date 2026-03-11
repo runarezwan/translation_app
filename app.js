@@ -22,6 +22,8 @@ class LuminaTranslator {
         this.listeningText = document.getElementById('listening-text');
         this.langFromLabel = document.getElementById('lang-from-label');
         this.langToLabel = document.getElementById('lang-to-label');
+        this.videoFeed = document.getElementById('video-feed');
+        this.stream = null;
 
         this.checkProtocol();
         this.initSpeechRecognition();
@@ -135,23 +137,31 @@ class LuminaTranslator {
             return;
         }
 
-        // 1. Hardware/Permission Check First
+        // 1. Hardware/Permission Check First (Audio + Video)
         try {
-            this.listeningText.textContent = 'Requesting Microphone access...';
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            console.log('Mic hardware access granted');
-            // We stop the stream immediately because SpeechRecognition will open its own
-            stream.getTracks().forEach(track => track.stop());
+            this.listeningText.textContent = 'Requesting Camera & Mic access...';
+            this.stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: true, 
+                video: { width: 1280, height: 720 } 
+            });
+            
+            console.log('Hardware access granted');
+            
+            // Attach stream to video element
+            if (this.videoFeed) {
+                this.videoFeed.srcObject = this.stream;
+            }
+            
         } catch (err) {
-            console.error('Mic hardware error:', err);
+            console.error('Hardware error:', err);
             this.isListening = false;
             this.setListeningUI(false);
             if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                this.listeningText.textContent = '❌ Permission Denied! Click the LOCK icon 🔒 in the URL bar and reset mic access.';
-            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                this.listeningText.textContent = '❌ No Microphone found! Please plug in a mic.';
+                this.listeningText.textContent = '❌ Permission Denied! Click the LOCK icon 🔒 in the URL bar and reset camera/mic access.';
+            } else if (err.name === 'NotFoundError') {
+                this.listeningText.textContent = '❌ No Camera or Microphone found!';
             } else {
-                this.listeningText.textContent = '❌ Mic Error: ' + err.message;
+                this.listeningText.textContent = '❌ Error: ' + err.message;
             }
             this.listeningText.style.color = '#ef4444';
             return;
@@ -188,6 +198,13 @@ class LuminaTranslator {
         if (!this.recognition) return;
         console.log('Stopping recognition');
         this.recognition.stop();
+        
+        // Stop Camera Stream
+        if (this.stream) {
+            this.stream.getTracks().forEach(track => track.stop());
+            if (this.videoFeed) this.videoFeed.srcObject = null;
+        }
+        
         this.isListening = false;
         this.setListeningUI(false);
     }
