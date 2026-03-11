@@ -23,7 +23,9 @@ class LuminaTranslator {
         this.langFromLabel = document.getElementById('lang-from-label');
         this.langToLabel = document.getElementById('lang-to-label');
         this.videoFeed = document.getElementById('video-feed');
+        this.subtitleEl = document.getElementById('subtitles');
         this.stream = null;
+        this.subtitleTimeout = null;
 
         this.checkProtocol();
         this.initSpeechRecognition();
@@ -88,6 +90,7 @@ class LuminaTranslator {
             const currentText = finalTranscript || interimTranscript;
             if (currentText) {
                 this.inputText.textContent = currentText;
+                this.updateSubtitles(currentText);
                 this.translate(currentText);
             }
         };
@@ -232,6 +235,17 @@ class LuminaTranslator {
         
         this.isListening = false;
         this.setListeningUI(false);
+        if (this.subtitleEl) this.subtitleEl.textContent = '';
+    }
+
+    updateSubtitles(text) {
+        if (!this.subtitleEl) return;
+        this.subtitleEl.textContent = text;
+        
+        clearTimeout(this.subtitleTimeout);
+        this.subtitleTimeout = setTimeout(() => {
+            if (this.subtitleEl) this.subtitleEl.textContent = '';
+        }, 3000); // Hide subtitles after 3 seconds of silence
     }
 
     setListeningUI(active) {
@@ -265,6 +279,7 @@ class LuminaTranslator {
         // Reset text boxes
         this.inputText.textContent = '';
         this.outputText.textContent = '';
+        if (this.subtitleEl) this.subtitleEl.textContent = '';
 
         // Restart recognition with new language if it was running
         if (this.isListening) {
