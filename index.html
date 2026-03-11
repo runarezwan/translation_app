@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina Translate | Real-time Voice Translator</title>
+    <meta name="description" content="Premium real-time voice translator between English and Finnish with zero-latency feel.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <main class="app-container">
+        <header>
+            <h1 class="logo">Lumina <span>Translate</span></h1>
+            <p class="subtitle">Experience seamless real-time conversation</p>
+        </header>
+
+        <section class="translator-card">
+            <div class="controls">
+                <div class="language-toggle">
+                    <span id="lang-from-label" class="lang-label active">English</span>
+                    <button id="toggle-btn" class="switch-btn" aria-label="Switch languages">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/>
+                        </svg>
+                    </button>
+                    <span id="lang-to-label" class="lang-label">Finnish</span>
+                </div>
+            </div>
+
+            <div class="display-area">
+                <div class="input-pane">
+                    <div class="pane-header">
+                        <span class="status-indicator" id="status-indicator"></span>
+                        <span id="listening-text">Click to start listening</span>
+                    </div>
+                    <div class="text-content" id="input-text" data-placeholder="Your speech will appear here..."></div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="output-pane">
+                    <div class="pane-header">Translation</div>
+                    <div class="text-content" id="output-text" data-placeholder="Translation will appear here..."></div>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button id="mic-btn" class="mic-btn" aria-label="Start recording">
+                    <div class="pulse-ring"></div>
+                    <svg viewBox="0 0 24 24" width="32" height="32">
+                        <path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path fill="currentColor" d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                </button>
+            </div>
+        </section>
+
+        <footer class="tip-section">
+            <p>Tip: Stay in a quiet environment for better accuracy.</p>
+        </footer>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
