@@ -43,23 +43,29 @@ class LuminaTranslator {
             return;
         }
 
+        this.isRecognizing = false; // Internal state of the engine
         this.recognition = new SpeechRecognition();
         this.recognition.continuous = true;
         this.recognition.interimResults = true;
         
         this.recognition.onstart = () => {
+            this.isRecognizing = true;
             this.setListeningUI(true);
-            console.log('Recognition started');
+            console.log('Recognition started and active');
         };
 
         this.recognition.onend = () => {
+            this.isRecognizing = false;
+            console.log('Recognition engine stopped');
+            
             if (this.isListening) {
-                // Keep listening if we didn't explicitly stop and no error occurred
-                try {
-                    this.recognition.start();
-                } catch (e) {
-                    console.error('Restart failed:', e);
-                }
+                // Keep listening if we didn't explicitly stop. 
+                // Wait 300ms to ensure the engine has fully reset before restarting.
+                setTimeout(() => {
+                    if (this.isListening && !this.isRecognizing) {
+                        this.startListening();
+                    }
+                }, 300);
             } else {
                 this.setListeningUI(false);
             }
@@ -128,18 +134,31 @@ class LuminaTranslator {
             this.listeningText.textContent = '❌ Error: Browser not supported';
             return;
         }
+
+        // If it's already running, don't try to start it again
+        if (this.isRecognizing) {
+            console.log('Already recognizing, skipping start call');
+            return;
+        }
         
         const fromLang = this.currentMode.split('-')[0];
         this.recognition.lang = this.languages[fromLang].code;
-        console.log('Attempting to start recognition for:', this.recognition.lang);
         
         try {
+            this.isListening = true; 
             this.recognition.start();
-            this.isListening = true;
             this.listeningText.textContent = 'Connecting to microphone...';
         } catch (e) {
-            console.error('Recognition start error:', e);
-            this.listeningText.textContent = 'Error: ' + e.message;
+            // If we still get 'already started', just ignore it as it means the state is out of sync
+            if (e.message.includes('already started')) {
+                console.log('Suppressed: Recognition was already running.');
+                this.isRecognizing = true;
+                this.setListeningUI(true);
+            } else {
+                console.error('Recognition start error:', e);
+                this.isListening = false;
+                this.listeningText.textContent = 'Error: ' + e.message;
+            }
         }
     }
 
