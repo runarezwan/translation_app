@@ -54,16 +54,16 @@ class LuminaTranslator {
             console.log('Recognition started and active');
         };
 
-        this.recognition.onend = () => {
+        this.recognition.onend = async () => {
             this.isRecognizing = false;
             console.log('Recognition engine stopped');
             
             if (this.isListening) {
                 // Keep listening if we didn't explicitly stop. 
                 // Wait 300ms to ensure the engine has fully reset before restarting.
-                setTimeout(() => {
+                setTimeout(async () => {
                     if (this.isListening && !this.isRecognizing) {
-                        this.startListening();
+                        await this.startListening();
                     }
                 }, 300);
             } else {
@@ -104,7 +104,7 @@ class LuminaTranslator {
                 message += 'No speech detected. Please try again.';
                 // Auto-restart for 'no-speech' if we want it to be continuous
                 this.isListening = true;
-                setTimeout(() => this.startListening(), 100);
+                setTimeout(async () => await this.startListening(), 100);
             } else {
                 message += event.error;
             }
@@ -119,23 +119,45 @@ class LuminaTranslator {
         this.toggleBtn.addEventListener('click', () => this.swapLanguages());
     }
 
-    toggleListening() {
+    async toggleListening() {
         console.log('Toggle Clicked. Current state:', this.isListening);
         if (this.isListening) {
             this.stopListening();
         } else {
-            this.startListening();
+            await this.startListening();
         }
     }
 
-    startListening() {
+    async startListening() {
         if (!this.recognition) {
             console.error('Recognition object missing');
             this.listeningText.textContent = '❌ Error: Browser not supported';
             return;
         }
 
-        // If it's already running, don't try to start it again
+        // 1. Hardware/Permission Check First
+        try {
+            this.listeningText.textContent = 'Requesting Microphone access...';
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('Mic hardware access granted');
+            // We stop the stream immediately because SpeechRecognition will open its own
+            stream.getTracks().forEach(track => track.stop());
+        } catch (err) {
+            console.error('Mic hardware error:', err);
+            this.isListening = false;
+            this.setListeningUI(false);
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                this.listeningText.textContent = '❌ Permission Denied! Click the LOCK icon 🔒 in the URL bar and reset mic access.';
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                this.listeningText.textContent = '❌ No Microphone found! Please plug in a mic.';
+            } else {
+                this.listeningText.textContent = '❌ Mic Error: ' + err.message;
+            }
+            this.listeningText.style.color = '#ef4444';
+            return;
+        }
+
+        // 2. Start Speech Recognition
         if (this.isRecognizing) {
             console.log('Already recognizing, skipping start call');
             return;
@@ -205,7 +227,7 @@ class LuminaTranslator {
         // Restart recognition with new language if it was running
         if (this.isListening) {
             this.stopListening();
-            setTimeout(() => this.startListening(), 100);
+            setTimeout(async () => await this.startListening(), 100);
         }
     }
 
