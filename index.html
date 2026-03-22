@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rehan | Real-time Voice Translator</title>
+    <title>Rehan | Real-time AI Translator</title>
     <meta name="description"
-        content="Premium real-time voice translator between English and Finnish with zero-latency feel.">
+        content="Premium real-time AI voice translator with zero-latency feel and TTS.">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Plus+Jakarta+Sans:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Plus+Jakarta+Sans:wght@500;700&display=swap"
         rel="stylesheet">
 </head>
 
@@ -20,7 +20,7 @@
 
     <main class="app-container">
         <header>
-            <h1 class="logo">Rehan</h1>
+            <h1 class="logo">Rehan<span>.AI</span></h1>
             <p class="subtitle">Experience seamless real-time conversation</p>
         </header>
 
@@ -29,18 +29,43 @@
                 <video id="video-feed" autoplay playsinline muted></video>
                 <div class="video-overlay">LIVE FEED</div>
                 <div id="subtitles" class="subtitles"></div>
+                <div class="hud-top-right">
+                    <span id="hud-status">READY</span>
+                </div>
             </div>
             
-            <div class="controls">
-                <div class="language-toggle">
-                    <span id="lang-from-label" class="lang-label active">English</span>
-                    <button id="toggle-btn" class="switch-btn" aria-label="Switch languages">
-                        <svg viewBox="0 0 24 24" width="24" height="24">
+            <div class="controls-expanded">
+                <div class="lang-selector-group">
+                    <div class="lang-select-wrapper">
+                        <label for="lang-from">From</label>
+                        <select id="lang-from">
+                            <option value="en-US">English</option>
+                            <option value="fi-FI">Finnish</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ja-JP">Japanese</option>
+                        </select>
+                    </div>
+
+                    <button id="toggle-btn" class="switch-btn" aria-label="Swap languages">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor"
                                 d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z" />
                         </svg>
                     </button>
-                    <span id="lang-to-label" class="lang-label">Finnish</span>
+
+                    <div class="lang-select-wrapper">
+                        <label for="lang-to">To</label>
+                        <select id="lang-to">
+                            <option value="fi-FI">Finnish</option>
+                            <option value="en-US" selected>English</option>
+                            <option value="es-ES">Spanish</option>
+                            <option value="fr-FR">French</option>
+                            <option value="de-DE">German</option>
+                            <option value="ja-JP">Japanese</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -48,16 +73,27 @@
                 <div class="input-pane">
                     <div class="pane-header">
                         <span class="status-indicator" id="status-indicator"></span>
-                        <span id="listening-text">Click to start listening</span>
+                        <span id="listening-text">Click mic to start</span>
                     </div>
-                    <div class="text-content" id="input-text" data-placeholder="Your speech will appear here..."></div>
+                    <div class="text-wrapper">
+                        <div class="text-content" id="input-text" data-placeholder="Speech will appear here..."></div>
+                        <div class="pane-actions">
+                            <button id="copy-input" title="Copy input"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="divider"></div>
 
                 <div class="output-pane">
                     <div class="pane-header">Translation</div>
-                    <div class="text-content" id="output-text" data-placeholder="Translation will appear here..."></div>
+                    <div class="text-wrapper">
+                        <div class="text-content" id="output-text" data-placeholder="Translation will appear here..."></div>
+                        <div class="pane-actions">
+                            <button id="copy-output" title="Copy translation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                            <button id="speak-btn" title="Speak translation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -71,6 +107,18 @@
                             d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
                     </svg>
                 </button>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="history-container">
+            <div class="history-header">
+                <h3>Translation History</h3>
+                <button id="clear-history">Clear History</button>
+            </div>
+            <div id="history-list" class="history-list">
+                <!-- History items will appear here -->
+                <div class="history-empty">Your conversation log will appear here...</div>
             </div>
         </section>
 
